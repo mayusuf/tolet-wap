@@ -9,6 +9,7 @@ import Layout from './components/Layout';
 import PropertyDetail from './components/PropertyDetail';
 import Login from './components/Login';
 import CreateUser from './components/CreateUser';
+import BookingProperty from './components/BookingProperty';
 
 const router = createBrowserRouter([
   {
@@ -34,6 +35,15 @@ const router = createBrowserRouter([
     element: (
       <Layout>
         <Login />
+      </Layout>
+    ),
+    errorElement: <ErrorPage />
+  },
+  {
+    path: "/booking-property/:id",
+    element: (
+      <Layout>
+        <BookingProperty />
       </Layout>
     ),
     errorElement: <ErrorPage />

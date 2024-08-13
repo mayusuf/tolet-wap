@@ -39,11 +39,11 @@ const PropertyDetail = () => {
   };
 
   const handleBookNowOnClick = () => {
-    const isUserLoggedIn = false;
+    const isUserLoggedIn = true;
     if(!isUserLoggedIn) {
         navigate("/login");
     } else {
-        //
+      navigate(`/booking-property/${property?.id}`);
     }
   }
 
