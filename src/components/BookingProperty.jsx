@@ -66,6 +66,7 @@ const BookingProperty = () => {
       cancelButtonText: "No, cancel!",
     }).then((result) => {
       if (result.isConfirmed) {
+
         toast.success("Booking request submitted successfully!", {
             onClose: () => {
                 navigate("/");
