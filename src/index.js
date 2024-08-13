@@ -3,61 +3,9 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import LandingPage from './components/LandingPage';
-import ErrorPage from './components/ErrorPage';
-import Layout from './components/Layout';
-import PropertyDetail from './components/PropertyDetail';
-import Login from './components/Login';
-import CreateUser from './components/CreateUser';
-import BookingProperty from './components/BookingProperty';
+import { routes } from './utils/routes';
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: (
-      <Layout>
-        <LandingPage />
-      </Layout>
-    ),
-    errorElement: <ErrorPage />
-  },
-  {
-    path: "/property/:id",
-    element: (
-      <Layout>
-        <PropertyDetail />
-      </Layout>
-    ),
-    errorElement: <ErrorPage />
-  },
-  {
-    path: "/login",
-    element: (
-      <Layout>
-        <Login />
-      </Layout>
-    ),
-    errorElement: <ErrorPage />
-  },
-  {
-    path: "/booking-property/:id",
-    element: (
-      <Layout>
-        <BookingProperty />
-      </Layout>
-    ),
-    errorElement: <ErrorPage />
-  },
-  {
-    path: "/create-user",
-    element: (
-      <Layout>
-        <CreateUser />
-      </Layout>
-    ),
-    errorElement: <ErrorPage />
-  }
-]);
+const router = createBrowserRouter(routes);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
