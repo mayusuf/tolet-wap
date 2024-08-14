@@ -9,6 +9,7 @@ import BookingConfirmation from "../components/BookingConfirmation";
 import Login from "../components/Login";
 import MyProfile from "../components/MyProfile";
 import CreateProperty from "../components/CreateProperty";
+import MyBookingList from "../components/MyBookingList";
 
 export const routes = [
     {
@@ -52,6 +53,15 @@ export const routes = [
         element: (
             <Layout>
                 <BookingList />
+            </Layout>
+        ),
+        errorElement: <ErrorPage />
+    },
+    {
+        path: "/my-bookings",
+        element: (
+            <Layout>
+                <MyBookingList />
             </Layout>
         ),
         errorElement: <ErrorPage />

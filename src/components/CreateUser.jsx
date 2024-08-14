@@ -32,7 +32,7 @@ const CreateUser = () => {
     phone: "",
     photo: null,
     photoPreview: null,
-    type: "Tenor",
+    type: "tenant",
   });
 
   const [error, setError] = useState("");
@@ -67,7 +67,7 @@ const CreateUser = () => {
       phone: "",
       photo: null,
       photoPreview: null,
-      type: "Tenor",
+      type: "tenant",
     });
     setError("");
   };
@@ -278,14 +278,14 @@ const CreateUser = () => {
                 onChange={handleChange}
               >
                 <FormControlLabel
-                  value="Tenor"
+                  value="tenant"
                   control={<Radio />}
-                  label="Tenor"
+                  label="Tenant"
                 />
                 <FormControlLabel
-                  value="Property Owner"
+                  value="owner"
                   control={<Radio />}
-                  label="Property Owner"
+                  label="Owner"
                 />
               </RadioGroup>
             </FormControl>
