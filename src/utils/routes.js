@@ -1,4 +1,3 @@
-import { Login } from "@mui/icons-material";
 import ErrorPage from "../components/ErrorPage";
 import LandingPage from "../components/LandingPage";
 import Layout from "../components/Layout";
@@ -7,8 +6,10 @@ import BookingProperty from "../components/BookingProperty";
 import BookingList from "../components/BookingList";
 import CreateUser from "../components/CreateUser";
 import BookingConfirmation from "../components/BookingConfirmation";
+import Login from "../components/Login";
+import MyProfile from "../components/MyProfile";
 import CreateProperty from "../components/CreateProperty";
- 
+
 export const routes = [
     {
         path: "/",
@@ -69,6 +70,15 @@ export const routes = [
         element: (
             <Layout>
                 <CreateUser />
+            </Layout>
+        ),
+        errorElement: <ErrorPage />
+    },
+    {
+        path: "/my-profile",
+        element: (
+            <Layout>
+                <MyProfile />
             </Layout>
         ),
         errorElement: <ErrorPage />

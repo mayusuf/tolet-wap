@@ -13,6 +13,8 @@ import ListItemText from '@mui/material/ListItemText';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import LogoutIcon from '@mui/icons-material/Logout';
+import LoginIcon from '@mui/icons-material/Login';
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import AddIcon from '@mui/icons-material/Add';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -28,6 +30,11 @@ const Header = () => {
     setAnchorEl(null);
   };
 
+  const handleMyProfile = () => {
+    handleClose();
+    navigate("/my-profile");
+  }
+
   const handleBookingList = () => {
     handleClose();
     navigate("/booking-list");
@@ -40,6 +47,12 @@ const Header = () => {
 
   const handleLogout = () => {
     handleClose();
+    // Add your logout logic here
+  };
+
+  const handleLogin = () => {
+    handleClose();
+    navigate("/login");
     // Add your logout logic here
   };
 
@@ -122,6 +135,13 @@ const Header = () => {
                 },
               }}
             >
+              <MenuItem onClick={handleMyProfile}>
+                <ListItemIcon>
+                  <AccountBoxIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="My Profile" />
+              </MenuItem>
+              <Divider />
               <MenuItem onClick={handleBookingList}>
                 <ListItemIcon>
                   <AssignmentIcon fontSize="small" />
@@ -141,6 +161,13 @@ const Header = () => {
                   <LogoutIcon fontSize="small" />
                 </ListItemIcon>
                 <ListItemText primary="Logout" />
+              </MenuItem>
+              <Divider />
+              <MenuItem onClick={handleLogin}>
+                <ListItemIcon>
+                  <LoginIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="Login" />
               </MenuItem>
             </Menu>
           </Box>
