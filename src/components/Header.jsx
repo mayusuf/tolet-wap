@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
@@ -18,10 +18,28 @@ import AccountBoxIcon from "@mui/icons-material/AccountBox";
 import AddIcon from "@mui/icons-material/Add";
 import CreateIcon from "@mui/icons-material/Create";
 import { Link, useNavigate } from "react-router-dom";
+import { getFromLocalStore, saveToLocalStore } from "../utils/utils";
+import { Api } from "../utils/api";
 
 const Header = () => {
+  let userId = getFromLocalStore("user-id") ?? null;
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
+  const [user, setUser] = useState({});
+
+  useEffect(() => {
+    if (!userId) return;
+
+    loadUser(userId);
+  }, [userId]);
+
+  const loadUser = async (id) => {
+    const response = await fetch(Api.GetUser(id));
+    const result = await response.json();
+    if (result?.data) {
+      setUser(result?.data);
+    }
+  };
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -48,6 +66,8 @@ const Header = () => {
 
   const handleLogout = () => {
     handleClose();
+    saveToLocalStore("user-id", null)
+    setUser({});
     // Add your logout logic here
   };
 
@@ -110,7 +130,7 @@ const Header = () => {
               }}
               onClick={handleClick}
             >
-              Guest
+              {user?.userid ?? "Guest"}
             </Button>
             <Menu
               anchorEl={anchorEl}
@@ -149,40 +169,57 @@ const Header = () => {
                 <ListItemText primary="My Profile" />
               </MenuItem>
               <Divider />
-              <MenuItem onClick={handleBookingList}>
-                <ListItemIcon>
-                  <AssignmentIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary="Booking List" />
-              </MenuItem>
-              <Divider />
-              <MenuItem onClick={handleCreateProperty}>
-                <ListItemIcon>
-                  <AddIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary="Create Property" />
-              </MenuItem>
-              <Divider />
-              <MenuItem onClick={handleLogout}>
-                <ListItemIcon>
-                  <LogoutIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary="Logout" />
-              </MenuItem>
-              <Divider />
-              <MenuItem onClick={handleLogin}>
-                <ListItemIcon>
-                  <LoginIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary="Login" />
-              </MenuItem>
-              <Divider />
-              <MenuItem onClick={handleCreateAccount}>
-                <ListItemIcon>
-                  <CreateIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary="Create Account" />
-              </MenuItem>
+
+              {user?.role === "owner" ? (
+                <MenuItem onClick={handleBookingList}>
+                  <ListItemIcon>
+                    <AssignmentIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary="Booking List" />
+                </MenuItem>
+              ) : null}
+
+              {user?.role === "owner" ? <Divider /> : null}
+
+              {user?.role === "owner" ? (
+                <MenuItem onClick={handleCreateProperty}>
+                  <ListItemIcon>
+                    <AddIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary="Create Property" />
+                </MenuItem>
+              ) : null}
+
+              {user?.role === "owner" ? <Divider /> : null}
+
+              {user?.userid ? (
+                <MenuItem onClick={handleLogout}>
+                  <ListItemIcon>
+                    <LogoutIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary="Logout" />
+                </MenuItem>
+              ) : null}
+
+              {!user?.userid ? (
+                <MenuItem onClick={handleLogin}>
+                  <ListItemIcon>
+                    <LoginIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary="Login" />
+                </MenuItem>
+              ) : null}
+
+              {!user?.userid ? <Divider /> : null}
+
+              {!user?.userid ? (
+                <MenuItem onClick={handleCreateAccount}>
+                  <ListItemIcon>
+                    <CreateIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary="Create Account" />
+                </MenuItem>
+              ) : null}
             </Menu>
           </Box>
         </Toolbar>

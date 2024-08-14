@@ -5,6 +5,18 @@ export const truncateText = (text, maxLength) => {
     return text;
 }
 
+export const saveToLocalStore = (name, data) => {
+    localStorage.setItem(name, JSON.stringify(data));
+};
+
+export const getFromLocalStore = (name) => {
+    try {
+        return JSON.parse(localStorage.getItem(name));
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 export const getProperties = () => {
     const properties = [
         {

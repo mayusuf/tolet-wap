@@ -13,12 +13,14 @@ import {
   FormLabel,
   Avatar,
 } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Api } from "../utils/api";
+import { saveToLocalStore } from "../utils/utils";
+import { useNavigate } from "react-router-dom";
 
 const CreateUser = () => {
-  const from = useParams();
-  console.log(from);
-
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     userId: "",
     password: "",
@@ -70,7 +72,7 @@ const CreateUser = () => {
     setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Check if passwords match
@@ -79,8 +81,43 @@ const CreateUser = () => {
       return;
     }
 
-    // Submit form logic here
     console.log("Form Data Submitted: ", formData);
+
+    // Prepare form data
+    const form = new FormData();
+    form.append("userid", formData.userId);
+    form.append("password", formData.password);
+    form.append("role", formData.type);
+    form.append("firstname", formData.firstName);
+    form.append("lastname", formData.lastName);
+    form.append("address", formData.address);
+    form.append("phone", formData.phone);
+    form.append("email", formData.email);
+    form.append("imagelink", formData.photo); // Append file
+
+    try {
+      const response = await fetch(Api.CreateUser, {
+        method: "POST",
+        body: form,
+      });
+      console.log(response);
+
+      if (response.ok) {
+        toast.success("User created successfully");
+        const result = await response.json();
+        if(!result?.data?.id) return;
+        saveToLocalStore("user-id", result?.data?.id)
+        navigate("/");
+      } else {
+        const data = await response.json();
+        setError(data.message || "Something went wrong");
+        toast.error(data.message || "Something went wrong");
+      }
+    } catch (error) {
+      setError("Network error. Please try again later.");
+      toast.error("Network error. Please try again later.");
+      console.error("Error:", error);
+    }
   };
 
   return (
@@ -97,7 +134,7 @@ const CreateUser = () => {
         onSubmit={handleSubmit}
       >
         <Typography variant="h4" sx={{ mb: 2 }} fontWeight="bold">
-          {from === "/" ? "My Profile" : "Create an account"}
+          Create an account
         </Typography>
 
         <Grid container spacing={2}>
@@ -273,6 +310,7 @@ const CreateUser = () => {
             Clear
           </Button>
         </Box>
+        <ToastContainer position="bottom-center" />
       </Box>
     </Container>
   );
