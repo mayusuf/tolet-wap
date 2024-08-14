@@ -13,11 +13,8 @@ import {
   FormLabel,
   Avatar,
 } from "@mui/material";
-import { useParams } from "react-router-dom";
 
-const CreateUser = () => {
-  const from = useParams();
-  console.log(from);
+const MyProfile = () => {
 
   const [formData, setFormData] = useState({
     userId: "",
@@ -97,7 +94,7 @@ const CreateUser = () => {
         onSubmit={handleSubmit}
       >
         <Typography variant="h4" sx={{ mb: 2 }} fontWeight="bold">
-          {from === "/" ? "My Profile" : "Create an account"}
+          My Profile
         </Typography>
 
         <Grid container spacing={2}>
@@ -278,4 +275,4 @@ const CreateUser = () => {
   );
 };
 
-export default CreateUser;
+export default MyProfile;
