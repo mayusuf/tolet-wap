@@ -8,6 +8,7 @@ import CreateUser from "../components/CreateUser";
 import BookingConfirmation from "../components/BookingConfirmation";
 import Login from "../components/Login";
 import MyProfile from "../components/MyProfile";
+import CreateProperty from "../components/CreateProperty";
 
 export const routes = [
     {
@@ -81,5 +82,15 @@ export const routes = [
             </Layout>
         ),
         errorElement: <ErrorPage />
+    },
+    {
+        path: "/create-property",
+        element: (
+            <Layout>
+                <CreateProperty />
+            </Layout>
+        ),
+        errorElement: <ErrorPage />
     }
 ];
+ 

@@ -15,6 +15,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LoginIcon from '@mui/icons-material/Login';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import AddIcon from '@mui/icons-material/Add';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Header = () => {
@@ -37,6 +38,11 @@ const Header = () => {
   const handleBookingList = () => {
     handleClose();
     navigate("/booking-list");
+  };
+
+  const handleCreateProperty = () => {
+    handleClose();
+    navigate("/create-property");
   };
 
   const handleLogout = () => {
@@ -141,6 +147,13 @@ const Header = () => {
                   <AssignmentIcon fontSize="small" />
                 </ListItemIcon>
                 <ListItemText primary="Booking List" />
+              </MenuItem>
+              <Divider />
+              <MenuItem onClick={handleCreateProperty}>
+                <ListItemIcon>
+                  <AddIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="Create Property" />
               </MenuItem>
               <Divider />
               <MenuItem onClick={handleLogout}>
