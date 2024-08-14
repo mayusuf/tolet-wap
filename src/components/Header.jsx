@@ -25,7 +25,7 @@ const Header = () => {
   let userId = getFromLocalStore("user-id") ?? null;
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState({role: "tenant"});
 
   useEffect(() => {
     if (!userId) return;
@@ -54,6 +54,11 @@ const Header = () => {
     navigate("/my-profile");
   };
 
+  const handleMyBookings = () => {
+    handleClose();
+    navigate("/my-bookings");
+  };
+
   const handleBookingList = () => {
     handleClose();
     navigate("/booking-list");
@@ -66,7 +71,7 @@ const Header = () => {
 
   const handleLogout = () => {
     handleClose();
-    saveToLocalStore("user-id", null)
+    saveToLocalStore("user-id", null);
     setUser({});
     // Add your logout logic here
   };
@@ -169,6 +174,17 @@ const Header = () => {
                 <ListItemText primary="My Profile" />
               </MenuItem>
               <Divider />
+
+              {user?.role === "tenant" ? (
+                <MenuItem onClick={handleMyBookings}>
+                  <ListItemIcon>
+                    <AssignmentIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary="My Bookings" />
+                </MenuItem>
+              ) : null}
+
+              {user?.role === "tenant" ? <Divider /> : null}
 
               {user?.role === "owner" ? (
                 <MenuItem onClick={handleBookingList}>
