@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Box, Pagination } from "@mui/material";
 import PropertyCard from "./PropertyCard";
 import { getProperties } from "../utils/utils";
+import { Api } from "../utils/api";
 
 const PropertyList = () => {
   const properties = getProperties();
@@ -12,6 +13,17 @@ const PropertyList = () => {
   const handlePageChange = (event, value) => {
     setPage(value);
   };
+
+  useEffect(() => {
+    loadProperties();
+  }, []);
+
+  const loadProperties = async () => {
+    const response = await fetch(Api.GetPropertyList);
+    const result = await response.json();
+    console.log(result);
+
+  }
 
   return (
     <Box>
