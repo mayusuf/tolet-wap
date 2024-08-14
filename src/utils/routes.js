@@ -7,7 +7,8 @@ import BookingProperty from "../components/BookingProperty";
 import BookingList from "../components/BookingList";
 import CreateUser from "../components/CreateUser";
 import BookingConfirmation from "../components/BookingConfirmation";
-
+import CreateProperty from "../components/CreateProperty";
+ 
 export const routes = [
     {
         path: "/",
@@ -71,5 +72,15 @@ export const routes = [
             </Layout>
         ),
         errorElement: <ErrorPage />
+    },
+    {
+        path: "/create-property",
+        element: (
+            <Layout>
+                <CreateProperty />
+            </Layout>
+        ),
+        errorElement: <ErrorPage />
     }
 ];
+ 
