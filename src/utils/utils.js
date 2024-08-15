@@ -19,9 +19,35 @@ export const getFromLocalStore = (name) => {
     }
 };
 
+const getLastPart = (str) => {
+    if (str?.includes("/")) {
+        const parts = str?.split('/');
+        return parts[parts?.length - 1];
+    } else {
+        return str;
+    }
+};
+
 export const getImageDirectory = (image) => {
-    return `${domain}/uploads/${image}`
+    return `${domain}/uploads/${getLastPart(image)}`
     // return `../../../tolet-api-wap/uploads/${image}`;
+}
+
+export const getDate = () => {
+    const today = new Date();
+    const futureDate = new Date(today);
+    futureDate.setDate(today.getDate() + 10);
+
+    const formattedDate = futureDate.toLocaleDateString('en-CA');
+
+    return formattedDate;
+}
+
+export const currentDate = () => {
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('en-CA');
+
+    return formattedDate;
 }
 
 export const getProperties = () => {
@@ -119,4 +145,42 @@ export const getProperties = () => {
     ];
 
     return properties;
+}
+
+export function convertArray(arrayOfObject1) {
+    const propertyMap = {};
+
+    arrayOfObject1.forEach(booking => {
+        const {
+            propertyID,
+            propertyName,
+            propertyAddress,
+            propertyType,
+            propertyRent,
+            propertyDescription,
+            propertySize,
+            sizeUnit,
+            propertyStatus,
+            ...bookingDetails
+        } = booking;
+
+        if (!propertyMap[propertyID]) {
+            propertyMap[propertyID] = {
+                propertyID,
+                propertyName,
+                propertyAddress,
+                propertyType,
+                propertyRent,
+                propertyDescription,
+                propertySize,
+                sizeUnit,
+                propertyStatus,
+                bookings: []
+            };
+        }
+
+        propertyMap[propertyID].bookings.push(bookingDetails);
+    });
+
+    return Object.values(propertyMap);
 }

@@ -8,10 +8,9 @@ import {
   IconButton,
   Button,
 } from "@mui/material";
-import StarIcon from "@mui/icons-material/Star";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import { truncateText } from "../utils/utils";
+import { getImageDirectory, truncateText } from "../utils/utils";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
@@ -21,14 +20,15 @@ const MyBookingCard = ({ property }) => {
   const navigate = useNavigate();
   const [currentImage, setCurrentImage] = React.useState(0);
   const maxNameLength = 40;
+  const imageUrl = [property?.tenantPhotoLink];
 
   const handleNextImage = () => {
-    setCurrentImage((prev) => (prev + 1) % property.imageUrl.length);
+    setCurrentImage((prev) => (prev + 1) % imageUrl.length);
   };
 
   const handlePrevImage = () => {
     setCurrentImage(
-      (prev) => (prev - 1 + property.imageUrl.length) % property.imageUrl.length
+      (prev) => (prev - 1 + imageUrl.length) % imageUrl.length
     );
   };
 
@@ -60,11 +60,11 @@ const MyBookingCard = ({ property }) => {
         <CardMedia
           component="img"
           sx={{ width: "100%", height: "100%", objectFit: "cover" }}
-          image={property.imageUrl[currentImage]}
-          alt={property.name}
+          image={getImageDirectory(imageUrl[currentImage])}
+          alt={property.propertyName}
         />
         {/* Image navigation buttons */}
-        {property.imageUrl.length > 1 && (
+        {imageUrl.length > 1 && (
           <>
             <IconButton
               onClick={handlePrevImage}
@@ -99,39 +99,25 @@ const MyBookingCard = ({ property }) => {
       {/* Right part of the card (Property details) */}
       <CardContent sx={{ flex: 1, paddingLeft: 2 }}>
         <Typography variant="caption" fontWeight="bold">
-          {property.size} • {property.type} • {property.roomNumber} bedrooms •{" "}
-          {property.guests} guests
+          {property.propertySize} sqft • {property.propertyType} • {property?.roomNumber ?? ""} bedrooms
         </Typography>
         <Typography variant="h6" fontWeight="bold" sx={{ marginTop: 1 }}>
-          {truncateText(property.name, maxNameLength)}
+          {truncateText(property.propertyName, maxNameLength)}
         </Typography>
         <Typography
           variant="body2"
           color="textSecondary"
           sx={{ marginTop: 0.5 }}
         >
-          {property.location}
+          {property.propertyAddress}
         </Typography>
         <Typography
           variant="body2"
           color="textSecondary"
           sx={{ marginTop: 0.5 }}
         >
-          {property.distance}
+          {property.description}
         </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", marginTop: 1 }}>
-          <StarIcon sx={{ color: "#fbc02d", marginRight: 0.5 }} />
-          <Typography
-            variant="body2"
-            fontWeight="bold"
-            sx={{ marginRight: 0.5 }}
-          >
-            {property.rating} Outstanding
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            ({property.reviews} rating{property.reviews > 1 ? "s" : ""})
-          </Typography>
-        </Box>
         <Box
           sx={{
             display: "flex",
@@ -141,9 +127,9 @@ const MyBookingCard = ({ property }) => {
           }}
         >
           <Typography variant="h6" fontWeight="bold">
-            from ${property.price}{" "}
+            from ${property.propertyRent}{" "}
             <Typography variant="body2" component="span">
-              per night
+              per month
             </Typography>
           </Typography>
           <Button

@@ -20,13 +20,17 @@ import {
 } from "@mui/material";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
- 
- 
+import { getFromLocalStore } from "../utils/utils";
+import { Api } from "../utils/api";
+import { useNavigate } from "react-router-dom";
+
 const CreateProperty = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    ownerId: "12345",
+    ownerId: getFromLocalStore("user-id"),
     propertyName: "",
     propertyType: "Apartment",
+    address: "",
     numberOfRooms: "",
     propertySize: "",
     apartmentNumber: "",
@@ -38,10 +42,10 @@ const CreateProperty = () => {
     propertyImages: [],
     propertyImagePreviews: [],
   });
- 
+
   const handleChange = (e) => {
     const { name, value, files, type, checked } = e.target;
- 
+
     if (type === "checkbox") {
       setFormData((prevData) => {
         const updatedFacilities = checked
@@ -54,9 +58,7 @@ const CreateProperty = () => {
       });
     } else if (name === "propertyImages" && files) {
       const imageFiles = Array.from(files).slice(0, 10);
-      const imagePreviews = imageFiles.map((file) =>
-        URL.createObjectURL(file)
-      );
+      const imagePreviews = imageFiles.map((file) => URL.createObjectURL(file));
       setFormData((prevData) => ({
         ...prevData,
         [name]: imageFiles,
@@ -69,12 +71,13 @@ const CreateProperty = () => {
       }));
     }
   };
- 
+
   const handleClear = () => {
     setFormData({
-      ownerId: "12345",
+      ownerId: getFromLocalStore("user-id"),
       propertyName: "",
       propertyType: "Apartment",
+      address: "",
       numberOfRooms: "",
       propertySize: "",
       apartmentNumber: "",
@@ -87,14 +90,15 @@ const CreateProperty = () => {
       propertyImagePreviews: [],
     });
   };
- 
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
- 
+
     if (
       !formData.propertyName ||
       !formData.propertyType ||
       !formData.numberOfRooms ||
+      !formData.address ||
       !formData.propertySize ||
       !formData.rent ||
       !formData.description ||
@@ -103,12 +107,54 @@ const CreateProperty = () => {
       toast.error("Please fill out all required fields.");
       return;
     }
- 
+
     console.log("Property Data Submitted: ", formData);
-    toast.success("Property created successfully!");
-    handleClear();
+    const dataToSubmit = new FormData();
+
+    dataToSubmit.append("ownerId", formData.ownerId);
+    dataToSubmit.append("propertyName", formData.propertyName);
+    dataToSubmit.append("propertyType", formData.propertyType);
+    dataToSubmit.append("numberOfRooms", formData.numberOfRooms);
+    dataToSubmit.append("propertySize", formData.propertySize);
+    dataToSubmit.append("apartmentNumber", formData.apartmentNumber);
+    dataToSubmit.append("rent", formData.rent);
+    dataToSubmit.append("description", formData.description);
+    dataToSubmit.append("petAllowed", formData.petAllowed);
+    dataToSubmit.append("utility", formData.utility);
+    dataToSubmit.append("paddress", formData.address);
+    dataToSubmit.append("status", "active");
+    dataToSubmit.append("sizeUnit", "SQFT");
+    dataToSubmit.append("otherFacilities", formData.facilities?.join(", "));
+    formData.propertyImages.forEach((image) => {
+      dataToSubmit.append("propertyImages", image);
+    });
+
+    try {
+      const response = await fetch(Api.CreateProperty, {
+        method: "POST",
+        body: dataToSubmit,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast.success(result?.message || "Property created successfully!", {
+          onClose: () => {
+            handleClear();
+            navigate("/");
+          },
+        });
+      } else {
+        const result = await response.json();
+        toast.error(
+          result?.message || "Failed to create property. Please try again."
+        );
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("An error occurred. Please try again.");
+    }
   };
- 
+
   return (
     <Container maxWidth="sm">
       <Box
@@ -125,7 +171,7 @@ const CreateProperty = () => {
         <Typography variant="h4" sx={{ mb: 2 }} fontWeight="bold">
           Create Property
         </Typography>
- 
+
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <TextField
@@ -138,7 +184,7 @@ const CreateProperty = () => {
               }}
             />
           </Grid>
- 
+
           <Grid item xs={12}>
             <TextField
               fullWidth
@@ -149,7 +195,7 @@ const CreateProperty = () => {
               onChange={handleChange}
             />
           </Grid>
- 
+
           <Grid item xs={12}>
             <FormControl fullWidth>
               <Select
@@ -164,7 +210,7 @@ const CreateProperty = () => {
               </Select>
             </FormControl>
           </Grid>
- 
+
           <Grid item xs={6}>
             <TextField
               fullWidth
@@ -176,7 +222,7 @@ const CreateProperty = () => {
               onChange={handleChange}
             />
           </Grid>
- 
+
           <Grid item xs={6}>
             <TextField
               fullWidth
@@ -188,8 +234,8 @@ const CreateProperty = () => {
               onChange={handleChange}
             />
           </Grid>
- 
-          <Grid item xs={12}>
+
+          <Grid item xs={6}>
             <TextField
               fullWidth
               label="Apartment Number"
@@ -198,7 +244,7 @@ const CreateProperty = () => {
               onChange={handleChange}
             />
           </Grid>
- 
+
           <Grid item xs={6}>
             <TextField
               fullWidth
@@ -210,7 +256,18 @@ const CreateProperty = () => {
               onChange={handleChange}
             />
           </Grid>
- 
+
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Address"
+              name="address"
+              required
+              value={formData.address}
+              onChange={handleChange}
+            />
+          </Grid>
+
           <Grid item xs={12}>
             <TextField
               fullWidth
@@ -223,7 +280,7 @@ const CreateProperty = () => {
               onChange={handleChange}
             />
           </Grid>
- 
+
           <Grid item xs={12}>
             <FormControl component="fieldset">
               <FormLabel component="legend">Pet Allowed</FormLabel>
@@ -233,20 +290,12 @@ const CreateProperty = () => {
                 value={formData.petAllowed}
                 onChange={handleChange}
               >
-                <FormControlLabel
-                  value="Yes"
-                  control={<Radio />}
-                  label="Yes"
-                />
-                <FormControlLabel
-                  value="No"
-                  control={<Radio />}
-                  label="No"
-                />
+                <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
+                <FormControlLabel value="No" control={<Radio />} label="No" />
               </RadioGroup>
             </FormControl>
           </Grid>
- 
+
           <Grid item xs={12}>
             <FormControl component="fieldset">
               <FormLabel component="legend">Utility</FormLabel>
@@ -269,7 +318,7 @@ const CreateProperty = () => {
               </RadioGroup>
             </FormControl>
           </Grid>
- 
+
           <Grid item xs={12}>
             <FormControl component="fieldset">
               <FormLabel component="legend">Other Facilities</FormLabel>
@@ -298,7 +347,7 @@ const CreateProperty = () => {
               </FormGroup>
             </FormControl>
           </Grid>
- 
+
           <Grid item xs={12}>
             <Button
               variant="outlined"
@@ -317,7 +366,7 @@ const CreateProperty = () => {
               />
             </Button>
           </Grid>
- 
+
           {formData.propertyImagePreviews.length > 0 && (
             <Grid item xs={12}>
               <Stack
@@ -337,7 +386,7 @@ const CreateProperty = () => {
             </Grid>
           )}
         </Grid>
- 
+
         <Box sx={{ mt: 4, display: "flex", justifyContent: "space-between" }}>
           <Button
             variant="contained"
@@ -361,6 +410,5 @@ const CreateProperty = () => {
     </Container>
   );
 };
- 
+
 export default CreateProperty;
- 

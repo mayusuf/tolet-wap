@@ -1,11 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Container, Pagination, Typography } from "@mui/material";
-import { getProperties } from "../utils/utils";
+import { getFromLocalStore } from "../utils/utils";
 import MyBookingCard from "./MyBookingCard";
-// import { Api } from "../utils/api";
+import { Api } from "../utils/api";
 
 const MyBookingList = () => {
-  const properties = getProperties();
+  const id = getFromLocalStore("user-id");
+  const [properties, setProperties] = useState([]);
   const [page, setPage] = React.useState(1);
   const itemsPerPage = 5;
   const totalPages = Math.ceil(properties.length / itemsPerPage);
@@ -15,15 +16,14 @@ const MyBookingList = () => {
   };
 
   useEffect(() => {
-    // loadProperties();
-  }, []);
+    loadProperties(id);
+  }, [id]);
 
-  // const loadProperties = async () => {
-  //   const response = await fetch(Api.GetPropertyList);
-  //   const result = await response.json();
-  //   console.log(result);
-
-  // }
+  const loadProperties = async (id) => {
+    const response = await fetch(Api.MyBookings(id));
+    const result = await response.json();
+    setProperties(result || []);
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 1 }}>
@@ -35,7 +35,7 @@ const MyBookingList = () => {
         {properties
           .slice((page - 1) * itemsPerPage, page * itemsPerPage)
           .map((property) => (
-            <MyBookingCard key={property.id} property={property} />
+            <MyBookingCard key={property.propertyID} property={property} />
           ))}
 
         {/* Pagination */}
