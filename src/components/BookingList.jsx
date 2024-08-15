@@ -27,6 +27,7 @@ const BookingList = () => {
     const response = await fetch(Api.BookingList(id));
     const result = await response.json();
     console.log(result);
+    if(!result?.length) return;
     const modified = convertArray([...result]);
     setProperties(modified);
   };
@@ -40,7 +41,7 @@ const BookingList = () => {
   return (
     <Container maxWidth="md" sx={{ mt: 1 }}>
       <Typography variant="h4" gutterBottom>
-        Booking List
+        {properties?.length ? "Booking List" : "No Booking found!"}
       </Typography>
       <Box>
         {properties.map((property) => {
