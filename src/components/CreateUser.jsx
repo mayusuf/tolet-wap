@@ -110,8 +110,8 @@ const CreateUser = () => {
         navigate("/");
       } else {
         const data = await response.json();
-        setError(data.message || "Something went wrong");
-        toast.error(data.message || "Something went wrong");
+        setError(data.message || data.error || "Something went wrong");
+        toast.error(data.message || data.error || "Something went wrong");
       }
     } catch (error) {
       setError("Network error. Please try again later.");

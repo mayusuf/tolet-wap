@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Box,
@@ -13,13 +13,17 @@ import {
   FormLabel,
   Avatar,
 } from "@mui/material";
+import { getFromLocalStore, getImageDirectory } from "../utils/utils";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Api } from "../utils/api";
+import { useNavigate } from "react-router-dom";
 
 const MyProfile = () => {
-
+  const navigate = useNavigate();
+  let userId = getFromLocalStore("user-id") ?? null;
   const [formData, setFormData] = useState({
     userId: "",
-    password: "",
-    confirmPassword: "",
     email: "",
     firstName: "",
     lastName: "",
@@ -27,10 +31,43 @@ const MyProfile = () => {
     phone: "",
     photo: null,
     photoPreview: null,
-    type: "Tenor",
+    role: "tenant",
   });
 
-  const [error, setError] = useState("");
+  useEffect(() => {
+    if (!userId) return;
+
+    loadUser(userId);
+  }, [userId]);
+
+  const loadUser = async (id) => {
+    const response = await fetch(Api.GetUser(id));
+    const result = await response.json();
+    if (result?.length) {
+      const data = result[0];
+      let photoFile = null;
+      const imageDirectory = getImageDirectory(data?.imagelink);
+      if (imageDirectory) {
+        const imageResponse = await fetch(imageDirectory);
+        const imageBlob = await imageResponse.blob();
+        photoFile = new File([imageBlob], data?.imagelink, {
+          type: imageBlob.type,
+        });
+      }
+      // imagelink
+      setFormData({
+        userId: data?.userid,
+        email: data?.email,
+        firstName: data?.firstname,
+        lastName: data?.lastname,
+        address: data?.address,
+        phone: data?.phone,
+        photo: photoFile,
+        photoPreview: imageDirectory,
+        role: data?.role,
+      });
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -47,14 +84,11 @@ const MyProfile = () => {
         [name]: value,
       }));
     }
-    setError("");
   };
 
   const handleClear = () => {
     setFormData({
       userId: "",
-      password: "",
-      confirmPassword: "",
       email: "",
       firstName: "",
       lastName: "",
@@ -62,22 +96,44 @@ const MyProfile = () => {
       phone: "",
       photo: null,
       photoPreview: null,
-      type: "Tenor",
+      role: "tenant",
     });
-    setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Check if passwords match
-    if (formData.password !== formData.confirmPassword) {
-      setError("Password confirmation doesn't match");
-      return;
-    }
-
-    // Submit form logic here
     console.log("Form Data Submitted: ", formData);
+
+    const form = new FormData();
+    form.append("userid", formData.userId);
+    form.append("firstname", formData.firstName);
+    form.append("lastname", formData.lastName);
+    form.append("address", formData.address);
+    form.append("phone", formData.phone);
+    form.append("email", formData.email);
+    form.append("imagelink", formData.photo); // Append file
+
+    try {
+      const response = await fetch(Api.UpdateUser, {
+        method: "PUT",
+        body: form,
+      });
+      console.log(response);
+
+      if (response.ok) {
+        toast.success("User updated successfully", {
+          onClose: () => {
+            navigate("/");
+          },
+        });
+      } else {
+        const data = await response.json();
+        toast.error(data.message || data.error || "Something went wrong");
+      }
+    } catch (error) {
+      toast.error("Network error. Please try again later.");
+      console.error("Error:", error);
+    }
   };
 
   return (
@@ -105,43 +161,9 @@ const MyProfile = () => {
               name="userId"
               required
               value={formData.userId}
-              onChange={handleChange}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Password"
-              name="password"
-              type="password"
-              required
-              value={formData.password}
-              onChange={handleChange}
-              error={!!error && formData.password !== formData.confirmPassword}
-              helperText={
-                !!error && formData.password !== formData.confirmPassword
-                  ? error
-                  : ""
-              }
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Confirm Password"
-              name="confirmPassword"
-              type="password"
-              required
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              error={!!error && formData.password !== formData.confirmPassword}
-              helperText={
-                !!error && formData.password !== formData.confirmPassword
-                  ? error
-                  : ""
-              }
+              InputProps={{
+                readOnly: true,
+              }}
             />
           </Grid>
 
@@ -219,7 +241,11 @@ const MyProfile = () => {
           </Grid>
 
           {formData.photoPreview && (
-            <Grid item xs={12} sx={{ display: "flex", justifyContent: "center" }}>
+            <Grid
+              item
+              xs={12}
+              sx={{ display: "flex", justifyContent: "center" }}
+            >
               <Avatar
                 src={formData.photoPreview}
                 alt="Uploaded Photo"
@@ -229,23 +255,25 @@ const MyProfile = () => {
           )}
 
           <Grid item xs={12}>
-            <FormControl component="fieldset">
-              <FormLabel component="legend">Type</FormLabel>
+            <FormControl component="fieldset" inputPo>
+              <FormLabel component="legend">Role</FormLabel>
               <RadioGroup
                 row
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
+                name="role"
+                value={formData.role}
+                inputprops={{
+                  readOnly: true,
+                }}
               >
                 <FormControlLabel
-                  value="Tenor"
+                  value="tenant"
                   control={<Radio />}
-                  label="Tenor"
+                  label="Tenant"
                 />
                 <FormControlLabel
-                  value="Property Owner"
+                  value="owner"
                   control={<Radio />}
-                  label="Property Owner"
+                  label="Owner"
                 />
               </RadioGroup>
             </FormControl>
@@ -270,6 +298,7 @@ const MyProfile = () => {
             Clear
           </Button>
         </Box>
+        <ToastContainer position="bottom-center" />
       </Box>
     </Container>
   );

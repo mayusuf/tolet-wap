@@ -25,7 +25,7 @@ const Header = () => {
   let userId = getFromLocalStore("user-id") ?? null;
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [user, setUser] = useState({role: "tenant"});
+  const [user, setUser] = useState({ role: "tenant" });
 
   useEffect(() => {
     if (!userId) return;
@@ -36,8 +36,8 @@ const Header = () => {
   const loadUser = async (id) => {
     const response = await fetch(Api.GetUser(id));
     const result = await response.json();
-    if (result?.data) {
-      setUser(result?.data);
+    if (result?.length) {
+      setUser(result[0]);
     }
   };
 
@@ -167,15 +167,18 @@ const Header = () => {
                 },
               }}
             >
-              <MenuItem onClick={handleMyProfile}>
-                <ListItemIcon>
-                  <AccountBoxIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary="My Profile" />
-              </MenuItem>
-              <Divider />
+              {user?.userid ? (
+                <MenuItem onClick={handleMyProfile}>
+                  <ListItemIcon>
+                    <AccountBoxIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary="My Profile" />
+                </MenuItem>
+              ) : null}
 
-              {user?.role === "tenant" ? (
+              {user?.userid ? <Divider /> : null}
+
+              {user?.userid && user?.role === "tenant" ? (
                 <MenuItem onClick={handleMyBookings}>
                   <ListItemIcon>
                     <AssignmentIcon fontSize="small" />
@@ -184,9 +187,9 @@ const Header = () => {
                 </MenuItem>
               ) : null}
 
-              {user?.role === "tenant" ? <Divider /> : null}
+              {user?.userid && user?.role === "tenant" ? <Divider /> : null}
 
-              {user?.role === "owner" ? (
+              {user?.userid && user?.role === "owner" ? (
                 <MenuItem onClick={handleBookingList}>
                   <ListItemIcon>
                     <AssignmentIcon fontSize="small" />
@@ -195,9 +198,9 @@ const Header = () => {
                 </MenuItem>
               ) : null}
 
-              {user?.role === "owner" ? <Divider /> : null}
+              {user?.userid && user?.role === "owner" ? <Divider /> : null}
 
-              {user?.role === "owner" ? (
+              {user?.userid && user?.role === "owner" ? (
                 <MenuItem onClick={handleCreateProperty}>
                   <ListItemIcon>
                     <AddIcon fontSize="small" />
@@ -206,7 +209,7 @@ const Header = () => {
                 </MenuItem>
               ) : null}
 
-              {user?.role === "owner" ? <Divider /> : null}
+              {user?.userid && user?.role === "owner" ? <Divider /> : null}
 
               {user?.userid ? (
                 <MenuItem onClick={handleLogout}>

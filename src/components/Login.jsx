@@ -9,16 +9,20 @@ import {
   Divider,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { Api } from "../utils/api";
+import { saveToLocalStore } from "../utils/utils";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Login = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: "",
+    userid: "",
     password: "",
   });
 
   const [error, setError] = useState({
-    email: false,
+    userid: false,
     password: false,
   });
 
@@ -34,19 +38,41 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Check for empty fields
     const newError = {
-      email: formData.email === "",
+      userid: formData.userid === "",
       password: formData.password === "",
     };
     setError(newError);
 
     // If any field is empty, do not proceed
-    if (newError.email || newError.password) {
+    if (newError.userid || newError.password) {
       return;
+    }
+
+    try {
+      const response = await fetch(Api.Login, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (!result?.data?.userid) return;
+        saveToLocalStore("user-id", result?.data?.userid);
+        navigate("/");
+      } else {
+        const result = await response.json();
+        toast.error(result?.message || "Something went wrong");
+      }
+    } catch (error) {
+      toast.error("Network error. Please try again later.");
     }
 
     // Perform login logic here
@@ -55,7 +81,7 @@ const Login = () => {
 
   const handleCreateAccountButtonOnClick = () => {
     navigate("/create-user");
-  }
+  };
 
   return (
     <Container maxWidth="sm">
@@ -78,14 +104,11 @@ const Login = () => {
           <Grid item xs={12}>
             <TextField
               fullWidth
-              label="Email"
-              name="email"
-              type="email"
+              label="User ID"
+              name="userid"
               required
-              value={formData.email}
+              value={formData.userid}
               onChange={handleChange}
-              error={error.email}
-              helperText={error.email ? "Please fill out this field" : ""}
             />
           </Grid>
 
@@ -112,14 +135,14 @@ const Login = () => {
             fullWidth
             sx={{ mb: 2 }}
           >
-            Sign in with email
+            Sign in
           </Button>
 
           <Divider>or</Divider>
 
           <Typography variant="h5" sx={{ mt: 2 }} fontWeight="bold">
-          New here?
-        </Typography>
+            New here?
+          </Typography>
 
           <Button
             variant="outlined"
@@ -130,6 +153,7 @@ const Login = () => {
           >
             Create an account
           </Button>
+          <ToastContainer position="bottom-center" />
         </Box>
       </Box>
     </Container>
