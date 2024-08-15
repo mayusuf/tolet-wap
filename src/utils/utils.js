@@ -1,3 +1,5 @@
+import { domain } from "./api";
+
 export const truncateText = (text, maxLength) => {
     if (text.length > maxLength) {
         return text.substring(0, maxLength) + '...';
@@ -16,6 +18,11 @@ export const getFromLocalStore = (name) => {
         console.log(error);
     }
 };
+
+export const getImageDirectory = (image) => {
+    return `${domain}/uploads/${image}`
+    // return `../../../tolet-api-wap/uploads/${image}`;
+}
 
 export const getProperties = () => {
     const properties = [
