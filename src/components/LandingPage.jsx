@@ -1,10 +1,10 @@
 import React from 'react'
-import HomeList from './HomeList'
+import PropertyList from './PropertyList'
 
 const LandingPage = () => {
   return (
     <div>
-        <HomeList />
+        <PropertyList />
     </div>
   )
 }

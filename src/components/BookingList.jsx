@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -9,53 +9,27 @@ import {
   CardMedia,
   Divider,
 } from "@mui/material";
+import { convertArray, getFromLocalStore, getImageDirectory } from "../utils/utils";
+import { Api } from "../utils/api";
 
 const BookingList = () => {
   const navigate = useNavigate();
+  const userId = getFromLocalStore("user-id") ?? null;
 
-  const [properties] = useState([
-    {
-      id: 1,
-      name: "Luxury Condo @ 3055 Main ST",
-      isConfirmed: false,
-      bookings: [
-        {
-          id: 101,
-          firstName: "John",
-          lastName: "Doe",
-          address: "123 Street",
-          email: "john@example.com",
-          phone: "123-456-7890",
-          image: "/images/image-1.jpg",
-        },
-        {
-          id: 102,
-          firstName: "Jane",
-          lastName: "Smith",
-          address: "456 Avenue",
-          email: "jane@example.com",
-          phone: "987-654-3210",
-          image: "/images/image-2.jpg",
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Luxury Apartment @ 44 Campus Drive",
-      isConfirmed: false,
-      bookings: [
-        {
-          id: 201,
-          firstName: "Alice",
-          lastName: "Johnson",
-          address: "789 Boulevard",
-          email: "alice@example.com",
-          phone: "111-222-3333",
-          image: "/images/image-1.jpg",
-        },
-      ],
-    },
-  ]);
+  const [properties, setProperties] = useState([]);
+  console.log(properties);
+
+  useEffect(() => {
+    loadBookingList(userId);
+  }, [userId]);
+
+  const loadBookingList = async (id) => {
+    const response = await fetch(Api.BookingList(id));
+    const result = await response.json();
+    console.log(result);
+    const modified = convertArray([...result]);
+    setProperties(modified);
+  };
 
   const handleBookingClick = (propertyId, bookingId) => {
     navigate(`/booking-confirmation/${propertyId}/${bookingId}`, {
@@ -70,11 +44,10 @@ const BookingList = () => {
       </Typography>
       <Box>
         {properties.map((property) => {
-          if (property.isConfirmed) return null;
 
           return (
             <Card
-              key={property.id}
+              key={property.propertyID}
               sx={{ mb: 4, borderRadius: 2, boxShadow: 3 }}
             >
               <CardContent sx={{ padding: 2 }}>
@@ -83,12 +56,12 @@ const BookingList = () => {
                   fontWeight="bold"
                   sx={{ marginBottom: 2 }}
                 >
-                  {property.name}
+                  {`${property?.propertyName} ${property?.propertyType} @ ${property?.propertyAddress}`}
                 </Typography>
                 {property.bookings.map((booking, index) => (
                   <>
                     <Box
-                      key={booking.id}
+                      key={booking.bookingId}
                       sx={{
                         display: "flex",
                         alignItems: "center",
@@ -97,8 +70,8 @@ const BookingList = () => {
                     >
                       <CardMedia
                         component="img"
-                        image={booking.image}
-                        alt={`${booking.firstName} ${booking.lastName}`}
+                        image={getImageDirectory(booking.tenantPhotoLink)}
+                        alt={`${booking.tenantfName} ${booking.lastName}`}
                         sx={{
                           width: 100,
                           height: 100,
@@ -119,36 +92,38 @@ const BookingList = () => {
                           borderRadius: 2,
                         }}
                         onClick={() =>
-                          handleBookingClick(property.id, booking.id)
+                          handleBookingClick(property.propertyID, booking.bookingId)
                         }
                       >
                         <Typography variant="body1" fontWeight="bold">
-                          {booking.firstName} {booking.lastName}
+                          {booking.tenantfName} {booking.lastName}
                         </Typography>
                         <Typography
                           variant="body2"
                           color="textSecondary"
                           sx={{ marginTop: 0.5 }}
                         >
-                          {booking.address}
+                          {booking.tenantAddress}
                         </Typography>
                         <Typography
                           variant="body2"
                           color="textSecondary"
                           sx={{ marginTop: 0.5 }}
                         >
-                          {booking.email}
+                          {booking.tenantEmail}
                         </Typography>
                         <Typography
                           variant="body2"
                           color="textSecondary"
                           sx={{ marginTop: 0.5 }}
                         >
-                          {booking.phone}
+                          {booking.tenantPhone}
                         </Typography>
                       </Box>
                     </Box>
-                    {index < property.bookings.length - 1 && <Divider sx={{ my: 2 }} />}
+                    {index < property.bookings.length - 1 && (
+                      <Divider sx={{ my: 2 }} />
+                    )}
                   </>
                 ))}
               </CardContent>

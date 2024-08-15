@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -12,18 +12,21 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { Api } from "../utils/api";
+import { currentDate, getDate, getFromLocalStore } from "../utils/utils";
 
 const BookingProperty = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
 
-  const [propertyInfo] = useState({
-    propertyName: "Beautiful House",
-    address: "123 Main St, Anytown",
-    sizeAndRoom: "1500 ft², 3 rooms",
-    description: "A beautiful house with a great view.",
-    rent: "$1500/month",
-    availableDate: "2024-09-01",
+  const [propertyInfo, setPropertyInfo] = useState({
+    propertyName: "",
+    address: "",
+    sizeAndRoom: "",
+    description: "",
+    rent: "",
+    availableDate: "",
   });
 
   const [bookingInfo, setBookingInfo] = useState({
@@ -37,6 +40,55 @@ const BookingProperty = () => {
 
   const [isChecked, setIsChecked] = useState(false);
 
+  useEffect(() => {
+    const loadProperty = async () => {
+      const response = await fetch(Api.GetProperty(id));
+      const result = await response.json();
+      if (result?.length) {
+        const firstValue = result[0];
+        const modifiedValue = {
+          propertyName: firstValue?.aspropertyname,
+          address: firstValue?.paddress,
+          sizeAndRoom: `${firstValue?.propertysize ?? ""} ft², ${
+            firstValue?.numberofroom ?? ""
+          } rooms`,
+          description: firstValue?.description,
+          rent: `$${firstValue?.rent}/month`,
+          availableDate: getDate(),
+          ownerid: firstValue?.ownerid,
+          propertyid: firstValue?.propertyid,
+        };
+        setPropertyInfo(modifiedValue);
+      }
+    };
+
+    loadProperty(id);
+  }, [id]);
+
+  useEffect(() => {
+    let userId = getFromLocalStore("user-id") ?? null;
+    if (!userId) return;
+
+    loadUser(userId);
+  }, []);
+
+  const loadUser = async (id) => {
+    const response = await fetch(Api.GetUser(id));
+    const result = await response.json();
+    if (result?.length) {
+      const data = result[0];
+      setBookingInfo({
+        firstName: data?.firstname,
+        lastName: data?.lastname,
+        address: data?.address,
+        phone: data?.phone,
+        email: data?.email,
+        rentStartDate: "",
+        bookedby: data?.userid,
+      });
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setBookingInfo({
@@ -49,7 +101,7 @@ const BookingProperty = () => {
     setIsChecked(e.target.checked);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!isChecked) {
@@ -57,23 +109,47 @@ const BookingProperty = () => {
       return;
     }
 
-    Swal.fire({
+    const result = await Swal.fire({
       title: "Are you sure?",
       text: "Do you want to proceed with the booking?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Yes, book it!",
       cancelButtonText: "No, cancel!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-
-        toast.success("Booking request submitted successfully!", {
-            onClose: () => {
-                navigate("/");
-            }
-        });
-      }
     });
+
+    if (result.isConfirmed) {
+      try {
+        const data = {
+          propertyid: propertyInfo?.propertyid,
+          ownerid: propertyInfo?.ownerid,
+          bookingdate: currentDate(),
+          bookedby: bookingInfo?.bookedby,
+          bookingstatus: "requested",
+          requestnote: "",
+          approvalnote: "",
+        };
+        const response = await fetch(Api.CreateBooking, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+        toast.success(
+          result?.message || "Booking request submitted successfully!",
+          {
+            onClose: () => {
+              navigate("/");
+            },
+          }
+        );
+      } catch (error) {
+        toast.error("Failed to submit booking request.");
+      }
+    }
   };
 
   return (

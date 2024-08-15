@@ -73,6 +73,7 @@ const Header = () => {
     handleClose();
     saveToLocalStore("user-id", null);
     setUser({});
+    navigate("/login")
     // Add your logout logic here
   };
 

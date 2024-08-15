@@ -11,46 +11,113 @@ import {
 } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { getProperties } from "../utils/utils";
+import { getFromLocalStore, getImageDirectory } from "../utils/utils";
+import { Api } from "../utils/api";
+
+// {
+//   apartmentnumber: "4B";
+//   aspropertyname: "Sunset Villa";
+//   description: "A cozy apartment with a great view";
+//   image1: "http://localhost:3000/uploads/1723584641813.jpg";
+//   image2: "http://localhost:3000/uploads/1723584641818.jpeg";
+//   image3: "http://localhost:3000/uploads/1723584641819.jpg";
+//   image4: "http://localhost:3000/uploads/1723584641820.jpg";
+//   image5: "http://localhost:3000/uploads/1723584641821.jpg";
+//   image6: "http://localhost:3000/uploads/1723584641821.jpg";
+//   image7: "http://localhost:3000/uploads/1723584641822.jpeg";
+//   image8: "http://localhost:3000/uploads/1723584641822.jpg";
+//   image9: "http://localhost:3000/uploads/1723584641823.jpeg";
+//   image10: "http://localhost:3000/uploads/1723584641823.jpg";
+//   numberofroom: 3;
+//   otherfacilities: "Pool, Gym";
+//   ownerid: "mmh1bd";
+//   paddress: "123 Main St";
+//   petallowed: "Yes";
+//   propertyid: 2;
+//   propertysize: 1200;
+//   propertytype: "Apartment";
+//   rent: "1000";
+//   sizeunit: "sqft";
+//   status: "active";
+//   utility: "Included";
+// }
+
+// --form 'ownerId="mmh1bd"' \
+// --form 'paddress="8888 S Main ST, Fairfield, Iowa, 52556"' \
+// --form 'propertyName="Dream House2"' \
+// --form 'propertyType="Apartment"' \
+// --form 'numberOfRooms="5"' \
+// --form 'propertySize="1750"' \
+// --form 'sizeUnit="SQFT"' \
+// --form 'apartmentNumber="B"' \
+// --form 'description="Recently renovated, all kitchen utils are new"' \
+// --form 'petAllowed="No"' \
+// --form 'utility="Included"' \
+// --form 'otherFacilities="Pool, Gym"' \
+// --form 'rent="1350"' \
+// --form 'propertyImages=@"/Volumes/Documents/MIU/Web Programming/Project/images/h9.jpeg"' \
+// --form 'propertyImages=@"/Volumes/Documents/MIU/Web Programming/Project/images/h3.jpg"' \
+// --form 'propertyImages=@"/Volumes/Documents/MIU/Web Programming/Project/images/h4.jpg"' \
+// --form 'propertyImages=@"/Volumes/Documents/MIU/Web Programming/Project/images/h5.jpg"' \
+// --form 'propertyImages=@"/Volumes/Documents/MIU/Web Programming/Project/images/h7.jpeg"' \
+// --form 'status="active"
 
 const PropertyDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [property, setProperty] = useState({});
   const [currentImage, setCurrentImage] = useState(0);
+  const imageUrl =
+    [
+      property?.image1,
+      property?.image2,
+      property?.image3,
+      property?.image3,
+      property?.image4,
+      property?.image5,
+      property?.image6,
+      property?.image7,
+      property?.image8,
+      property?.image9,
+      property?.image10,
+    ] || [];
 
   useEffect(() => {
-    const propertyId = parseInt(id, 10);
-    const properties = getProperties();
-    const foundProperty = properties.find((p) => p.id === propertyId);
-    setProperty(foundProperty);
+    const loadProperty = async () => {
+      const response = await fetch(Api.GetProperty(id));
+      const result = await response.json();
+      if (result?.length) {
+        setProperty(result[0]);
+      }
+      console.log(result);
+    };
+
+    loadProperty(id);
   }, [id]);
 
   const handleNextImage = () => {
-    setCurrentImage((prev) => (prev + 1) % property?.imageUrl.length);
+    setCurrentImage((prev) => (prev + 1) % imageUrl.length);
   };
 
   const handlePrevImage = () => {
     setCurrentImage(
-      (prev) =>
-        (prev - 1 + (property?.imageUrl?.length || 1)) %
-        (property?.imageUrl?.length || 1)
+      (prev) => (prev - 1 + (imageUrl?.length || 1)) % (imageUrl?.length || 1)
     );
   };
 
   const handleBookNowOnClick = () => {
-    const isUserLoggedIn = true;
-    if(!isUserLoggedIn) {
-        navigate("/login");
+    const userid = getFromLocalStore("user-id");
+    if (!userid) {
+      navigate("/login");
     } else {
-      navigate(`/booking-property/${property?.id}`);
+      navigate(`/booking-property/${property?.propertyid}`);
     }
-  }
+  };
 
   return (
     <Container maxWidth="md">
       <Box sx={{ padding: "20px" }}>
-        {property?.id ? (
+        {property?.propertyid ? (
           <>
             {/* Image Carousel */}
             <Box
@@ -63,7 +130,7 @@ const PropertyDetail = () => {
               }}
             >
               <img
-                src={property?.imageUrl[currentImage]}
+                src={getImageDirectory(imageUrl[currentImage])}
                 alt={property?.name}
                 style={{
                   width: "100%",
@@ -113,14 +180,14 @@ const PropertyDetail = () => {
                 marginTop: "10px",
               }}
             >
-              {property.imageUrl.map((image, index) => (
+              {imageUrl.map((image, index) => (
                 <img
                   key={index}
-                  src={image}
+                  src={getImageDirectory(image)}
                   alt={`${property.name} ${index + 1}`}
                   onClick={() => setCurrentImage(index)}
                   style={{
-                    width: "100px",
+                    width: "65px",
                     height: "60px",
                     margin: "0 5px 5px 5px",
                     cursor: "pointer",
@@ -148,7 +215,7 @@ const PropertyDetail = () => {
                   variant="body1"
                   sx={{ color: "#666", paddingBottom: "16px" }}
                 >
-                  {property?.name}
+                  {property?.aspropertyname}
                 </Typography>
               </Grid>
 
@@ -167,7 +234,7 @@ const PropertyDetail = () => {
                   variant="body1"
                   sx={{ color: "#666", paddingBottom: "16px" }}
                 >
-                  {property?.roomNumber}
+                  {property?.numberofroom}
                 </Typography>
               </Grid>
             </Grid>
@@ -184,13 +251,13 @@ const PropertyDetail = () => {
                     paddingBottom: "8px",
                   }}
                 >
-                  AVAILABLE FROM
+                  UTILITIES
                 </Typography>
                 <Typography
                   variant="body1"
                   sx={{ color: "#666", paddingBottom: "16px" }}
                 >
-                  {property?.availableFrom}
+                  {property?.utility}
                 </Typography>
               </Grid>
 
@@ -209,7 +276,7 @@ const PropertyDetail = () => {
                   variant="body1"
                   sx={{ color: "#666", paddingBottom: "16px" }}
                 >
-                  {property?.size} sq ft
+                  {property?.propertysize} sq ft
                 </Typography>
               </Grid>
             </Grid>
@@ -217,25 +284,6 @@ const PropertyDetail = () => {
             <Divider sx={{ my: 2 }} />
 
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <Typography
-                  variant="subtitle2"
-                  sx={{
-                    fontWeight: "bold",
-                    color: "#333",
-                    paddingBottom: "8px",
-                  }}
-                >
-                  GUESTS
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{ color: "#666", paddingBottom: "16px" }}
-                >
-                  {property?.guests}
-                </Typography>
-              </Grid>
-
               <Grid item xs={12} sm={6}>
                 <Typography
                   variant="subtitle2"
@@ -251,7 +299,26 @@ const PropertyDetail = () => {
                   variant="body1"
                   sx={{ color: "#666", paddingBottom: "16px" }}
                 >
-                  {property?.location}
+                  {property?.paddress}
+                </Typography>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    fontWeight: "bold",
+                    color: "#333",
+                    paddingBottom: "8px",
+                  }}
+                >
+                  DESCRIPTION
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ color: "#666", paddingBottom: "16px" }}
+                >
+                  {property?.description}
                 </Typography>
               </Grid>
             </Grid>
@@ -268,13 +335,13 @@ const PropertyDetail = () => {
                     paddingBottom: "8px",
                   }}
                 >
-                  DISTANCE
+                  OTHER FACILITIES
                 </Typography>
                 <Typography
                   variant="body1"
                   sx={{ color: "#666", paddingBottom: "16px" }}
                 >
-                  {property?.distance} km
+                  {property?.otherfacilities}
                 </Typography>
               </Grid>
 
@@ -297,7 +364,7 @@ const PropertyDetail = () => {
                     paddingBottom: "16px",
                   }}
                 >
-                  ${property?.price}
+                  ${property?.rent}
                 </Typography>
               </Grid>
             </Grid>
@@ -312,7 +379,12 @@ const PropertyDetail = () => {
                 marginTop: "20px",
               }}
             >
-              <Button variant="contained" color="primary" size="large" onClick={handleBookNowOnClick}>
+              <Button
+                variant="contained"
+                color="primary"
+                size="large"
+                onClick={handleBookNowOnClick}
+              >
                 Book Now
               </Button>
             </Box>

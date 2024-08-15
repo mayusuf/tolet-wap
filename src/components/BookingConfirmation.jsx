@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -10,28 +10,31 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { Api } from "../utils/api";
+import { getImageDirectory } from "../utils/utils";
 
 const BookingConfirmation = () => {
   const navigate = useNavigate();
+  const { propertyId, bookingId } = useParams();
 
-  const [propertyInfo] = useState({
-    propertyName: "Beautiful House",
-    address: "123 Main St, Anytown",
-    sizeAndRoom: "1500 ft², 3 rooms",
-    description: "A beautiful house with a great view.",
-    rent: "$1500/month",
-    availableDate: "2024-09-01",
-    imageUrl: "/images/image-1.jpg",
+  const [propertyInfo, setPropertyInfo] = useState({
+    propertyName: "",
+    address: "",
+    sizeAndRoom: "",
+    description: "",
+    rent: "",
+    availableDate: "",
+    imageUrl: "",
   });
 
-  const [requesterInfo] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    address: "456 Elm St, Othertown",
-    phone: "123-456-7890",
-    email: "johndoe@example.com",
-    imageUrl: "/images/image-2.jpg",
+  const [requesterInfo, setRequesterInfo] = useState({
+    firstName: "",
+    lastName: "",
+    address: "",
+    phone: "",
+    email: "",
+    imageUrl: "",
   });
 
   const [bookingInfo, setBookingInfo] = useState({
@@ -39,6 +42,39 @@ const BookingConfirmation = () => {
     rentStartDate: "",
     instructions: "",
   });
+
+  useEffect(() => {
+    loadBookingConfirmationInfo(bookingId);
+  }, [bookingId]);
+
+  const loadBookingConfirmationInfo = async (id) => {
+    const response = await fetch(Api.BookingInfoForConfim(id));
+    const result = await response.json();
+    if (result?.length) {
+      const data = result[0];
+
+      setPropertyInfo({
+        propertyName: data?.propertyName,
+        address: data?.propertyAddress,
+        sizeAndRoom: `${data?.propertySize} ft² ${
+          data?.numberofRooms ? `, ${data?.numberofRooms} rooms` : ""
+        }`,
+        description: data?.propertyDescription,
+        rent: `$${data?.propertyRent}/month`,
+        availableDate: data?.bookingDate?.split("T")[0],
+        imageUrl: getImageDirectory(data?.image1),
+      });
+
+      setRequesterInfo({
+        firstName: data?.tenantfName,
+        lastName: data?.lastName,
+        address: data?.tenantAddress,
+        phone: data?.tenantPhone,
+        email: data?.tenantEmail,
+        imageUrl: getImageDirectory(data?.tenantPhotoLink),
+      });
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -48,25 +84,49 @@ const BookingConfirmation = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    Swal.fire({
+    const result = await Swal.fire({
       title: "Are you sure?",
-      text: "Do you want to proceed with the booking?",
+      text: "Do you want to confirm the booking?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Yes, book it!",
+      confirmButtonText: "Yes, confirm it!",
       cancelButtonText: "No, cancel!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        toast.success("Booking request submitted successfully!", {
-          onClose: () => {
-            navigate(-1); // Navigate to the previous page
-          },
-        });
-      }
     });
+
+    if (result.isConfirmed) {
+      try {
+        const data = {
+          propertyid: propertyId,
+          bookingid: bookingId,
+          bookingstatus: "confirmed",
+          approvalnote: bookingInfo?.instructions,
+        };
+
+        const response = await fetch(Api.ConfirmBooking, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        toast.success(
+          result?.message || "Booking request submitted successfully!",
+          {
+            onClose: () => {
+              navigate(-1);
+            },
+          }
+        );
+      } catch (error) {
+        toast.error("Failed to submit booking request.");
+      }
+    }
   };
 
   return (
@@ -137,7 +197,12 @@ const BookingConfirmation = () => {
                   component="img"
                   src={propertyInfo.imageUrl}
                   alt="Property"
-                  sx={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: '8px' }}
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                  }}
                 />
               </Grid>
             </Grid>
@@ -214,7 +279,12 @@ const BookingConfirmation = () => {
                   component="img"
                   src={requesterInfo.imageUrl}
                   alt="Requester"
-                  sx={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: '8px' }}
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                  }}
                 />
               </Grid>
             </Grid>
@@ -271,11 +341,7 @@ const BookingConfirmation = () => {
           </Box>
 
           <Box sx={{ textAlign: "right", marginTop: "20px" }}>
-            <Button
-              variant="contained"
-              color="primary"
-              type="submit"
-            >
+            <Button variant="contained" color="primary" type="submit">
               Confirm Booking
             </Button>
           </Box>
