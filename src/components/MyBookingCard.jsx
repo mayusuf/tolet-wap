@@ -99,7 +99,7 @@ const MyBookingCard = ({ property }) => {
       {/* Right part of the card (Property details) */}
       <CardContent sx={{ flex: 1, paddingLeft: 2 }}>
         <Typography variant="caption" fontWeight="bold">
-          {property.propertySize} sqft • {property.propertyType} • {property?.roomNumber ?? ""} bedrooms
+          {property.propertySize} sqft • {property.propertyType} • {property?.numberofRooms ?? ""} bedrooms
         </Typography>
         <Typography variant="h6" fontWeight="bold" sx={{ marginTop: 1 }}>
           {truncateText(property.propertyName, maxNameLength)}
